@@ -2,6 +2,8 @@ package com.nguyenthanhnam.game;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -29,9 +31,125 @@ public class GameView extends View {
     private Random random;
     private boolean isGameRunning;
 
+    private Bitmap playerBitmap;
+    private Bitmap bombBitmap;
+    private Bitmap wallBitmap;
+    private Bitmap breakableWallBitmap;
+    private Bitmap explosionBitmap;
+
     public GameView(Context context) {
         super(context);
         initialize();
+    }
+
+
+
+    private void loadBitmaps() {
+        // Load and scale bitmaps
+        playerBitmap = getBitmapFromResource(R.drawable.player);
+        bombBitmap = getBitmapFromResource(R.drawable.bomb);
+        wallBitmap = getBitmapFromResource(R.drawable.wall);
+        breakableWallBitmap = getBitmapFromResource(R.drawable.breakable_wall);
+        explosionBitmap = getBitmapFromResource(R.drawable.explosion);
+    }
+
+    private Bitmap getBitmapFromResource(int resourceId) {
+        Bitmap original = BitmapFactory.decodeResource(getResources(), resourceId);
+        if (original == null) return null;
+
+        // We'll resize the bitmap when cellSize is determined
+        return original;
+    }
+
+    private Bitmap scaleBitmap(Bitmap bitmap) {
+        if (bitmap == null) return null;
+        return Bitmap.createScaledBitmap(bitmap, (int)cellSize, (int)cellSize, true);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        cellSize = Math.min(w, h) / GRID_SIZE;
+
+        // Resize all bitmaps according to cellSize
+        playerBitmap = scaleBitmap(getBitmapFromResource(R.drawable.player));
+        bombBitmap = scaleBitmap(getBitmapFromResource(R.drawable.bomb));
+        wallBitmap = scaleBitmap(getBitmapFromResource(R.drawable.wall));
+        breakableWallBitmap = scaleBitmap(getBitmapFromResource(R.drawable.breakable_wall));
+        explosionBitmap = scaleBitmap(getBitmapFromResource(R.drawable.explosion));
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        // Draw background
+        canvas.drawColor(Color.rgb(150, 200, 150));
+
+        // Draw walls with images
+        for (Wall wall : walls) {
+            Bitmap wallBitmap = wall.isBreakable() ? breakableWallBitmap : this.wallBitmap;
+            if (wallBitmap != null) {
+                canvas.drawBitmap(wallBitmap,
+                        wall.getX() * cellSize,
+                        wall.getY() * cellSize,
+                        paint);
+            }
+        }
+
+        // Draw bombs with images
+        for (Bomb bomb : bombs) {
+            if (bombBitmap != null) {
+                canvas.drawBitmap(bombBitmap,
+                        bomb.getX() * cellSize,
+                        bomb.getY() * cellSize,
+                        paint);
+            }
+        }
+
+        // Draw explosions with images
+        for (Explosion explosion : explosions) {
+            if (explosionBitmap != null) {
+                canvas.drawBitmap(explosionBitmap,
+                        explosion.getX() * cellSize,
+                        explosion.getY() * cellSize,
+                        paint);
+            }
+        }
+
+        // Draw player with image
+        if (playerBitmap != null) {
+            canvas.drawBitmap(playerBitmap,
+                    player.getX() * cellSize,
+                    player.getY() * cellSize,
+                    paint);
+        }
+
+        // Draw lives
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(40);
+        canvas.drawText("Lives: " + player.getLives(), 50, 50, paint);
+    }
+
+    // Clean up bitmaps when the view is destroyed
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        recycleBitmaps();
+    }
+
+    private void recycleBitmaps() {
+        if (playerBitmap != null) playerBitmap.recycle();
+        if (bombBitmap != null) bombBitmap.recycle();
+        if (wallBitmap != null) wallBitmap.recycle();
+        if (breakableWallBitmap != null) breakableWallBitmap.recycle();
+        if (explosionBitmap != null) explosionBitmap.recycle();
+
+        playerBitmap = null;
+        bombBitmap = null;
+        wallBitmap = null;
+        breakableWallBitmap = null;
+        explosionBitmap = null;
     }
 
     private void initialize() {
@@ -179,51 +297,51 @@ public class GameView extends View {
         }
     }
 
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        cellSize = Math.min(w, h) / GRID_SIZE;
-    }
+//    @Override
+//    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+//        super.onSizeChanged(w, h, oldw, oldh);
+//        cellSize = Math.min(w, h) / GRID_SIZE;
+//    }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        // Draw background
-        canvas.drawColor(Color.rgb(150, 200, 150)); // Light green background
-
-        // Draw walls
-        for (Wall wall : walls) {
-            paint.setColor(wall.isBreakable() ? Color.rgb(139, 69, 19) : Color.GRAY);
-            drawCell(canvas, wall.getX(), wall.getY());
-        }
-
-        // Draw bombs
-        paint.setColor(Color.BLACK);
-        for (Bomb bomb : bombs) {
-            drawCircle(canvas, bomb.getX(), bomb.getY());
-        }
-
-        // Draw explosions
-        paint.setColor(Color.RED);
-        for (Explosion explosion : explosions) {
-            drawCell(canvas, explosion.getX(), explosion.getY());
-        }
-
-        // Draw player
-        paint.setColor(Color.BLUE);
-        drawCircle(canvas, player.getX(), player.getY());
-    }
-
-    private void drawCell(Canvas canvas, float x, float y) {
-        canvas.drawRect(
-                x * cellSize,
-                y * cellSize,
-                (x + 1) * cellSize,
-                (y + 1) * cellSize,
-                paint
-        );
-    }
+//    @Override
+//    protected void onDraw(Canvas canvas) {
+//        super.onDraw(canvas);
+//
+//        // Draw background
+//        canvas.drawColor(Color.rgb(150, 200, 150)); // Light green background
+//
+//        // Draw walls
+//        for (Wall wall : walls) {
+//            paint.setColor(wall.isBreakable() ? Color.rgb(139, 69, 19) : Color.GRAY);
+//            drawCell(canvas, wall.getX(), wall.getY());
+//        }
+//
+//        // Draw bombs
+//        paint.setColor(Color.BLACK);
+//        for (Bomb bomb : bombs) {
+//            drawCircle(canvas, bomb.getX(), bomb.getY());
+//        }
+//
+//        // Draw explosions
+//        paint.setColor(Color.RED);
+//        for (Explosion explosion : explosions) {
+//            drawCell(canvas, explosion.getX(), explosion.getY());
+//        }
+//
+//        // Draw player
+//        paint.setColor(Color.BLUE);
+//        drawCircle(canvas, player.getX(), player.getY());
+//    }
+//
+//    private void drawCell(Canvas canvas, float x, float y) {
+//        canvas.drawRect(
+//                x * cellSize,
+//                y * cellSize,
+//                (x + 1) * cellSize,
+//                (y + 1) * cellSize,
+//                paint
+//        );
+//    }
 
     private void drawCircle(Canvas canvas, float x, float y) {
         canvas.drawCircle(

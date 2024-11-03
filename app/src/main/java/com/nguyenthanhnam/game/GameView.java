@@ -46,8 +46,17 @@ public class GameView extends View {
         startGameLoop();
     }
 
+//    private void initializeGame() {
+//        player = new Player(1, 1);
+//        createWalls();
+//        isGameRunning = true;
+//    }
+
     private void initializeGame() {
         player = new Player(1, 1);
+        walls.clear();
+        bombs.clear();
+        explosions.clear();
         createWalls();
         isGameRunning = true;
     }
@@ -152,11 +161,21 @@ public class GameView extends View {
         }
     }
 
+//    private void handlePlayerHit() {
+//        player.decreaseLives();
+//        if (player.getLives() <= 0) {
+//            isGameRunning = false;
+//            // Could add game over handling here
+//        }
+//    }
+
     private void handlePlayerHit() {
         player.decreaseLives();
         if (player.getLives() <= 0) {
             isGameRunning = false;
-            // Could add game over handling here
+            if (gameCallback != null) {
+                gameCallback.onGameOver();
+            }
         }
     }
 
@@ -271,5 +290,20 @@ public class GameView extends View {
         }
 
         return true;
+    }
+
+    public interface GameCallback {
+        void onGameOver();
+    }
+
+    private GameCallback gameCallback;
+
+    public void setGameCallback(GameCallback callback) {
+        this.gameCallback = callback;
+    }
+
+    public void restartGame() {
+        initializeGame();
+        invalidate();
     }
 }

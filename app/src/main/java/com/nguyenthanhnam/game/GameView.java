@@ -354,24 +354,29 @@ public class GameView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (!isGameRunning || event.getAction() != MotionEvent.ACTION_DOWN) {
-            return false;
-        }
-
-        float touchX = event.getX() / cellSize;
-        float touchY = event.getY() / cellSize;
-
-        // Handle movement
-        handlePlayerMovement(touchX, touchY);
-
-        // Place bomb
-        if (bombs.size() < player.getBombCapacity()) {
-            bombs.add(new Bomb(player.getX(), player.getY()));
-        }
-
-        invalidate();
-        return true;
+        return false;
     }
+
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        if (!isGameRunning || event.getAction() != MotionEvent.ACTION_DOWN) {
+//            return false;
+//        }
+//
+//        float touchX = event.getX() / cellSize;
+//        float touchY = event.getY() / cellSize;
+//
+//        // Handle movement
+//        handlePlayerMovement(touchX, touchY);
+//
+//        // Place bomb
+//        if (bombs.size() < player.getBombCapacity()) {
+//            bombs.add(new Bomb(player.getX(), player.getY()));
+//        }
+//
+//        invalidate();
+//        return true;
+//    }
 
     private void handlePlayerMovement(float touchX, float touchY) {
         float dx = touchX - player.getX();
@@ -424,4 +429,23 @@ public class GameView extends View {
         initializeGame();
         invalidate();
     }
+
+    public void movePlayer(int dx, int dy) {
+        float newX = player.getX() + dx;
+        float newY = player.getY() + dy;
+
+        if (canMoveTo(newX, newY)) {
+            player.setX(newX);
+            player.setY(newY);
+            invalidate();
+        }
+    }
+
+    public void placeBomb() {
+        if (bombs.size() < player.getBombCapacity()) {
+            bombs.add(new Bomb(player.getX(), player.getY()));
+            invalidate();
+        }
+    }
+
 }

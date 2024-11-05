@@ -95,11 +95,11 @@ public class MainActivity extends AppCompatActivity implements GameView.GameCall
     }
 
     @Override
-    public void onGameWon() {
+    public void onGameWon(String finalTime) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                btnPlayAgain.setText("You Won! Play Again");
+                btnPlayAgain.setText("You Won! Time: " + finalTime + "\nPlay Again");
                 btnPlayAgain.setVisibility(View.VISIBLE);
             }
         });

@@ -17,6 +17,10 @@ import java.util.List;
 import java.util.Random;
 
 public class GameView extends View {
+    private long gameStartTime;
+    private long currentTime;
+    private boolean isTimerRunning;
+
     private static final int GRID_SIZE = 15;
     private static final int GAME_FPS = 10;
     private static final long FRAME_TIME = 1000 / GAME_FPS;
@@ -151,6 +155,7 @@ public class GameView extends View {
         paint.setColor(Color.BLACK);
         paint.setTextSize(40);
         canvas.drawText("Lives: " + player.getLives(), 50, 50, paint);
+        canvas.drawText("Time: " + formatTime(currentTime), 50, 100, paint);
     }
 
     // Clean up bitmaps when the view is destroyed
@@ -200,6 +205,9 @@ public class GameView extends View {
         createWalls();
         placeTrophyBehindWall();
         isGameRunning = true;
+        gameStartTime = System.currentTimeMillis();
+        isTimerRunning = true;
+        currentTime = 0;
     }
 
     private void placeTrophyBehindWall() {
@@ -249,11 +257,20 @@ public class GameView extends View {
         updateExplosions();
         checkPlayerCollisions();
         checkTrophyCollision();
+        if (isTimerRunning) {
+            currentTime = System.currentTimeMillis() - gameStartTime;
+        }
+    }
+
+    private String formatTime(long milliseconds) {
+        int seconds = (int) (milliseconds / 1000) % 60;
+        int minutes = (int) (milliseconds / 1000) / 60;
+        return String.format("%02d:%02d", minutes, seconds);
     }
 
     private void checkTrophyCollision() {
         if (trophy != null && !walls.isEmpty()) {
-            // Kiểm tra xem tường chứa cup còn tồn tại không
+            //check wall contain cup í exist
             boolean trophyWallExists = false;
             for (Wall wall : walls) {
                 if (wall.getX() == trophy.getX() && wall.getY() == trophy.getY()) {
@@ -267,8 +284,9 @@ public class GameView extends View {
                     player.getX() == trophy.getX() &&
                     player.getY() == trophy.getY()) {
                 isGameRunning = false;
+                isTimerRunning = false;  // Dừng timer
                 if (gameCallback != null) {
-                    gameCallback.onGameWon();
+                    gameCallback.onGameWon(formatTime(currentTime));
                 }
             }
         }
@@ -480,7 +498,7 @@ public class GameView extends View {
 
     public interface GameCallback {
         void onGameOver();
-        void onGameWon();
+        void onGameWon(String finalTime);
     }
 
     private GameCallback gameCallback;

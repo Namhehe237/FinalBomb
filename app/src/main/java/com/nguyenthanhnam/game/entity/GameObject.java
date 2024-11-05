@@ -1,6 +1,6 @@
 
 // GameObject.java
-package com.nguyenthanhnam.game;
+package com.nguyenthanhnam.game.entity;
 
 public class GameObject {
     protected float x;

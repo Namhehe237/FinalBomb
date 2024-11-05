@@ -1,4 +1,4 @@
-package com.nguyenthanhnam.game;
+package com.nguyenthanhnam.game.entity;
 
 public class Trophy extends GameObject {
     public Trophy(float x, float y) {

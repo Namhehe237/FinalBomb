@@ -1,13 +1,17 @@
-package com.nguyenthanhnam.game;
+package com.nguyenthanhnam.game.ui;
 
 import android.os.Bundle;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity implements GameView.GameCallback {
+import com.nguyenthanhnam.game.R;
+import com.nguyenthanhnam.game.core.GameView;
+import com.nguyenthanhnam.game.core.GameCallback;
+import com.nguyenthanhnam.game.controller.Direction;
+
+public class MainActivity extends AppCompatActivity implements GameCallback {
     private GameView gameView;
     private Button btnPlayAgain;
     private Button btnUp, btnDown, btnLeft, btnRight, btnBomb;
@@ -17,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements GameView.GameCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         initializeViews();
         setupControlButtons();
         setupPlayAgainButton();
@@ -38,32 +41,26 @@ public class MainActivity extends AppCompatActivity implements GameView.GameCall
     }
 
     private void setupControlButtons() {
-        // Direction buttons
-        View.OnTouchListener directionListener = new View.OnTouchListener() {
+        View.OnClickListener directionListener = new View.OnClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    if (v == btnUp) {
-                        gameView.movePlayer(0, -1);
-                    } else if (v == btnDown) {
-                        gameView.movePlayer(0, 1);
-                    } else if (v == btnLeft) {
-                        gameView.movePlayer(-1, 0);
-                    } else if (v == btnRight) {
-                        gameView.movePlayer(1, 0);
-                    }
-                    return true;
+            public void onClick(View v) {
+                if (v == btnUp) {
+                    gameView.handleDirectionInput(Direction.UP);
+                } else if (v == btnDown) {
+                    gameView.handleDirectionInput(Direction.DOWN);
+                } else if (v == btnLeft) {
+                    gameView.handleDirectionInput(Direction.LEFT);
+                } else if (v == btnRight) {
+                    gameView.handleDirectionInput(Direction.RIGHT);
                 }
-                return false;
             }
         };
 
-        btnUp.setOnTouchListener(directionListener);
-        btnDown.setOnTouchListener(directionListener);
-        btnLeft.setOnTouchListener(directionListener);
-        btnRight.setOnTouchListener(directionListener);
+        btnUp.setOnClickListener(directionListener);
+        btnDown.setOnClickListener(directionListener);
+        btnLeft.setOnClickListener(directionListener);
+        btnRight.setOnClickListener(directionListener);
 
-        // Bomb button
         btnBomb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,16 +69,17 @@ public class MainActivity extends AppCompatActivity implements GameView.GameCall
         });
     }
 
-//    private void setupPlayAgainButton() {
-//        btnPlayAgain.setVisibility(View.GONE);
-//        btnPlayAgain.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                btnPlayAgain.setVisibility(View.GONE);
-//                gameView.restartGame();
-//            }
-//        });
-//    }
+    private void setupPlayAgainButton() {
+        btnPlayAgain.setVisibility(View.GONE);
+        btnPlayAgain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnPlayAgain.setVisibility(View.GONE);
+                btnPlayAgain.setText("Play Again");
+                gameView.restartGame();
+            }
+        });
+    }
 
     @Override
     public void onGameOver() {
@@ -95,24 +93,12 @@ public class MainActivity extends AppCompatActivity implements GameView.GameCall
     }
 
     @Override
-    public void onGameWon(String finalTime) {
+    public void onGameWon(final String finalTime) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 btnPlayAgain.setText("You Won! Time: " + finalTime + "\nPlay Again");
                 btnPlayAgain.setVisibility(View.VISIBLE);
-            }
-        });
-    }
-
-    private void setupPlayAgainButton() {
-        btnPlayAgain.setVisibility(View.GONE);
-        btnPlayAgain.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btnPlayAgain.setVisibility(View.GONE);
-                btnPlayAgain.setText("Play Again");  // Reset text
-                gameView.restartGame();
             }
         });
     }

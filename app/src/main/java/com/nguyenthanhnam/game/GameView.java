@@ -51,6 +51,7 @@ public class GameView extends View {
         wallBitmap = getBitmapFromResource(R.drawable.wall);
         breakableWallBitmap = getBitmapFromResource(R.drawable.breakable_wall);
         explosionBitmap = getBitmapFromResource(R.drawable.explosion);
+        trophyBitmap = getBitmapFromResource(R.drawable.trophy);
     }
 
     private Bitmap getBitmapFromResource(int resourceId) {
@@ -77,6 +78,7 @@ public class GameView extends View {
         wallBitmap = scaleBitmap(getBitmapFromResource(R.drawable.wall));
         breakableWallBitmap = scaleBitmap(getBitmapFromResource(R.drawable.breakable_wall));
         explosionBitmap = scaleBitmap(getBitmapFromResource(R.drawable.explosion));
+        trophyBitmap = scaleBitmap(getBitmapFromResource(R.drawable.trophy));
     }
 
     @Override
@@ -86,6 +88,8 @@ public class GameView extends View {
         // Draw background
         canvas.drawColor(Color.rgb(150, 200, 150));
 
+
+
         // Draw walls with images
         for (Wall wall : walls) {
             Bitmap wallBitmap = wall.isBreakable() ? breakableWallBitmap : this.wallBitmap;
@@ -93,6 +97,24 @@ public class GameView extends View {
                 canvas.drawBitmap(wallBitmap,
                         wall.getX() * cellSize,
                         wall.getY() * cellSize,
+                        paint);
+            }
+        }
+
+        if (trophy != null && trophyBitmap != null) {
+            boolean trophyWallExists = false;
+            // Kiểm tra xem có tường ở vị trí cup không
+            for (Wall wall : walls) {
+                if (wall.getX() == trophy.getX() && wall.getY() == trophy.getY()) {
+                    trophyWallExists = true;
+                    break;
+                }
+            }
+
+            if (!trophyWallExists) {
+                canvas.drawBitmap(trophyBitmap,
+                        trophy.getX() * cellSize,
+                        trophy.getY() * cellSize,
                         paint);
             }
         }
@@ -176,7 +198,24 @@ public class GameView extends View {
         bombs.clear();
         explosions.clear();
         createWalls();
+        placeTrophyBehindWall();
         isGameRunning = true;
+    }
+
+    private void placeTrophyBehindWall() {
+        List<Wall> breakableWalls = new ArrayList<>();
+        for (Wall wall : walls) {
+            if (wall.isBreakable() &&
+                    wall.getX() > 0 && wall.getX() < GRID_SIZE-1 &&
+                    wall.getY() > 0 && wall.getY() < GRID_SIZE-1) {
+                breakableWalls.add(wall);
+            }
+        }
+
+        if (!breakableWalls.isEmpty()) {
+            Wall selectedWall = breakableWalls.get(random.nextInt(breakableWalls.size()));
+            trophy = new Trophy(selectedWall.getX(), selectedWall.getY());
+        }
     }
 
     private void createWalls() {
@@ -209,6 +248,30 @@ public class GameView extends View {
         updateBombs();
         updateExplosions();
         checkPlayerCollisions();
+        checkTrophyCollision();
+    }
+
+    private void checkTrophyCollision() {
+        if (trophy != null && !walls.isEmpty()) {
+            // Kiểm tra xem tường chứa cup còn tồn tại không
+            boolean trophyWallExists = false;
+            for (Wall wall : walls) {
+                if (wall.getX() == trophy.getX() && wall.getY() == trophy.getY()) {
+                    trophyWallExists = true;
+                    break;
+                }
+            }
+
+            // Nếu tường đã bị phá và người chơi chạm vào vị trí cup
+            if (!trophyWallExists &&
+                    player.getX() == trophy.getX() &&
+                    player.getY() == trophy.getY()) {
+                isGameRunning = false;
+                if (gameCallback != null) {
+                    gameCallback.onGameWon();
+                }
+            }
+        }
     }
 
     private void updateBombs() {
@@ -417,6 +480,7 @@ public class GameView extends View {
 
     public interface GameCallback {
         void onGameOver();
+        void onGameWon();
     }
 
     private GameCallback gameCallback;
@@ -447,5 +511,9 @@ public class GameView extends View {
             invalidate();
         }
     }
+
+    private Trophy trophy;
+    private Bitmap trophyBitmap;
+
 
 }

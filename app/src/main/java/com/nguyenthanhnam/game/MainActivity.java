@@ -72,23 +72,47 @@ public class MainActivity extends AppCompatActivity implements GameView.GameCall
         });
     }
 
-    private void setupPlayAgainButton() {
-        btnPlayAgain.setVisibility(View.GONE);
-        btnPlayAgain.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btnPlayAgain.setVisibility(View.GONE);
-                gameView.restartGame();
-            }
-        });
-    }
+//    private void setupPlayAgainButton() {
+//        btnPlayAgain.setVisibility(View.GONE);
+//        btnPlayAgain.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                btnPlayAgain.setVisibility(View.GONE);
+//                gameView.restartGame();
+//            }
+//        });
+//    }
 
     @Override
     public void onGameOver() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                btnPlayAgain.setText("Game Over - Play Again");
                 btnPlayAgain.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    @Override
+    public void onGameWon() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                btnPlayAgain.setText("You Won! Play Again");
+                btnPlayAgain.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void setupPlayAgainButton() {
+        btnPlayAgain.setVisibility(View.GONE);
+        btnPlayAgain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnPlayAgain.setVisibility(View.GONE);
+                btnPlayAgain.setText("Play Again");  // Reset text
+                gameView.restartGame();
             }
         });
     }

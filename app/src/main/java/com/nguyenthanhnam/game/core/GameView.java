@@ -257,7 +257,11 @@ public class GameView extends View {
         isGameRunning = false;
         isTimerRunning = false;
         if (gameCallback != null) {
-            gameCallback.onGameWon(TimeFormatter.formatTime(currentTime));
+            // Sửa lại cách gọi callback, truyền cả 2 tham số
+            gameCallback.onGameWon(
+                    TimeFormatter.formatTime(currentTime),
+                    currentTime
+            );
         }
     }
 

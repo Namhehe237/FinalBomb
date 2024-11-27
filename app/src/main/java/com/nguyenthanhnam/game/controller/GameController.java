@@ -1,5 +1,6 @@
 package com.nguyenthanhnam.game.controller;
 
+import com.nguyenthanhnam.game.config.GameConfig;
 import com.nguyenthanhnam.game.core.GameView;
 import com.nguyenthanhnam.game.entity.*;
 
@@ -18,6 +19,7 @@ public class GameController {
     private Trophy trophy;
     private List<BombUpItem> bombUpItems;
     private List<FireUpItem> fireUpItems;
+    private List<Enemy> enemies;
 
 
     public GameController(GameView gameView, Player player, List<Bomb> bombs,
@@ -31,9 +33,84 @@ public class GameController {
         this.collisionController = new CollisionController(walls, bombs);
         this.bombUpItems = new ArrayList<>();
         this.fireUpItems = new ArrayList<>();
+        this.enemies = new ArrayList<>();
+        spawnEnemies();
         placeBombUpItem();
         placeFireUpItem();
     }
+
+    private void spawnEnemies() {
+        Random random = new Random();
+        for (int i = 0; i < 3; i++) {
+            int x = random.nextInt(GameConfig.GRID_SIZE - 2) + 1;
+            int y = random.nextInt(GameConfig.GRID_SIZE - 2) + 1;
+            enemies.add(new Enemy(x, y));
+        }
+    }
+
+    private void updateEnemies() {
+        for (Enemy enemy : enemies) {
+            if (enemy.isAlive()) {
+                // Kiểm tra va chạm với explosion
+                for (Explosion explosion : explosions) {
+                    if (explosion.getX() == enemy.getX() && explosion.getY() == enemy.getY()) {
+                        enemy.kill();
+                        break;
+                    }
+                }
+
+                // Di chuyển enemy
+                if (enemy.isAlive() && Math.random() < 0.1) {
+                    Direction direction = enemy.getRandomDirection();
+                    float newX = enemy.getNextX(direction);
+                    float newY = enemy.getNextY(direction);
+                    if (canEnemyMoveTo(newX, newY)) {
+                        enemy.setX(newX);
+                        enemy.setY(newY);
+                    }
+                }
+            }
+        }
+        checkEnemyPlayerCollision();
+    }
+
+    private boolean canEnemyMoveTo(float x, float y) {
+        // Kiểm tra giới hạn map
+        if (x < 0 || x >= GameConfig.GRID_SIZE || y < 0 || y >= GameConfig.GRID_SIZE) {
+            return false;
+        }
+
+        // Kiểm tra va chạm với tường
+        for (Wall wall : walls) {
+            if (wall.getX() == x && wall.getY() == y) {
+                return false;
+            }
+        }
+
+        // Kiểm tra va chạm với bomb
+        for (Bomb bomb : bombs) {
+            if (bomb.getX() == x && bomb.getY() == y) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void checkEnemyPlayerCollision() {
+        for (Enemy enemy : enemies) {
+            if (enemy.isAlive() &&
+                    enemy.getX() == player.getX() &&
+                    enemy.getY() == player.getY()) {
+                player.decreaseLives();
+                break;
+            }
+        }
+    }
+
+    public List<Enemy> getEnemies() {
+        return enemies;
+    }
+
 
 
     private void placeFireUpItem() {
@@ -67,6 +144,7 @@ public class GameController {
     public void updateGame() {
         updateBombs();
         updateExplosions();
+        updateEnemies();
         checkCollisions();
         checkTrophyCollision();
         checkBombUpCollision();

@@ -48,6 +48,7 @@ public class GameView extends View {
     private Bitmap trophyBitmap;
     private Bitmap bombUpItemBitmap;
     private Bitmap fireUpItemBitmap;
+    private Bitmap enemyBitmap;
 
     public GameView(Context context) {
         super(context);
@@ -93,6 +94,7 @@ public class GameView extends View {
         trophyBitmap = getBitmapFromResource(R.drawable.trophy);
         bombUpItemBitmap = getBitmapFromResource(R.drawable.bomb_up);
         fireUpItemBitmap = getBitmapFromResource(R.drawable.power_up);
+        enemyBitmap = getBitmapFromResource(R.drawable.enemy);
     }
 
     private Bitmap getBitmapFromResource(int resourceId) {
@@ -149,6 +151,8 @@ public class GameView extends View {
             bombUpItemBitmap = Bitmap.createScaledBitmap(bombUpItemBitmap, (int)cellSize, (int)cellSize, true);
         if (fireUpItemBitmap != null)
             fireUpItemBitmap = Bitmap.createScaledBitmap(fireUpItemBitmap, (int)cellSize, (int)cellSize, true);
+        if (enemyBitmap != null)
+            enemyBitmap = Bitmap.createScaledBitmap(enemyBitmap, (int)cellSize, (int)cellSize, true);
     }
 
     private void startGameLoop() {
@@ -232,6 +236,16 @@ public class GameView extends View {
                     player.getX() * cellSize,
                     player.getY() * cellSize,
                     paint);
+        }
+
+        //draw enemy
+        for (Enemy enemy : gameController.getEnemies()) {
+            if (enemy.isAlive() && enemyBitmap != null) {
+                canvas.drawBitmap(enemyBitmap,
+                        enemy.getX() * cellSize,
+                        enemy.getY() * cellSize,
+                        paint);
+            }
         }
 
         // Draw HUD

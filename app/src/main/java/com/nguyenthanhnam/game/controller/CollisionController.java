@@ -18,11 +18,11 @@ public class CollisionController {
     }
 
     public void checkPlayerCollisions(Player player, List<Explosion> explosions) {
-        for (Explosion explosion : explosions) {
-            if (player.getX() == explosion.getX() && player.getY() == explosion.getY()) {
-                player.decreaseLives();
-                return;
-            }
-        }
+       for (Explosion explosion: explosions){
+           if (explosion.getX()==player.getX() && explosion.getY()== player.getY()){
+               player.decreaseLives();
+               return;
+           }
+       }
     }
 }

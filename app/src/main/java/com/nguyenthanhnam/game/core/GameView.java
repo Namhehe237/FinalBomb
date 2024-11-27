@@ -46,6 +46,8 @@ public class GameView extends View {
     private Bitmap breakableWallBitmap;
     private Bitmap explosionBitmap;
     private Bitmap trophyBitmap;
+    private Bitmap bombUpItemBitmap;
+    private Bitmap fireUpItemBitmap;
 
     public GameView(Context context) {
         super(context);
@@ -89,6 +91,8 @@ public class GameView extends View {
         breakableWallBitmap = getBitmapFromResource(R.drawable.breakable_wall);
         explosionBitmap = getBitmapFromResource(R.drawable.explosion);
         trophyBitmap = getBitmapFromResource(R.drawable.trophy);
+        bombUpItemBitmap = getBitmapFromResource(R.drawable.bomb_up);
+        fireUpItemBitmap = getBitmapFromResource(R.drawable.power_up);
     }
 
     private Bitmap getBitmapFromResource(int resourceId) {
@@ -141,6 +145,10 @@ public class GameView extends View {
             explosionBitmap = Bitmap.createScaledBitmap(explosionBitmap, (int)cellSize, (int)cellSize, true);
         if (trophyBitmap != null)
             trophyBitmap = Bitmap.createScaledBitmap(trophyBitmap, (int)cellSize, (int)cellSize, true);
+        if (bombUpItemBitmap != null)
+            bombUpItemBitmap = Bitmap.createScaledBitmap(bombUpItemBitmap, (int)cellSize, (int)cellSize, true);
+        if (fireUpItemBitmap != null)
+            fireUpItemBitmap = Bitmap.createScaledBitmap(fireUpItemBitmap, (int)cellSize, (int)cellSize, true);
     }
 
     private void startGameLoop() {
@@ -231,6 +239,44 @@ public class GameView extends View {
         paint.setTextSize(40);
         canvas.drawText("Lives: " + player.getLives(), 50, 50, paint);
         canvas.drawText("Time: " + TimeFormatter.formatTime(currentTime), 50, 100, paint);
+
+        for (BombUpItem item : gameController.getBombUpItems()) {
+            if (!item.isCollected()) {
+                boolean hiddenByWall = false;
+                for (Wall wall : walls) {
+                    if (wall.getX() == item.getX() && wall.getY() == item.getY()) {
+                        hiddenByWall = true;
+                        break;
+                    }
+                }
+
+                if (!hiddenByWall && bombUpItemBitmap != null) {
+                    canvas.drawBitmap(bombUpItemBitmap,
+                            item.getX() * cellSize,
+                            item.getY() * cellSize,
+                            paint);
+                }
+            }
+        }
+
+        for (FireUpItem item : gameController.getFireUpItems()) {
+            if (!item.isCollected()) {
+                boolean hiddenByWall = false;
+                for (Wall wall : walls) {
+                    if (wall.getX() == item.getX() && wall.getY() == item.getY()) {
+                        hiddenByWall = true;
+                        break;
+                    }
+                }
+
+                if (!hiddenByWall && fireUpItemBitmap != null) {
+                    canvas.drawBitmap(fireUpItemBitmap,
+                            item.getX() * cellSize,
+                            item.getY() * cellSize,
+                            paint);
+                }
+            }
+        }
     }
 
     public void handleDirectionInput(Direction direction) {
